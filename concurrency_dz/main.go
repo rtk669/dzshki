@@ -42,11 +42,11 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 
-	MeasureLogs := []sensors.Measure{}
+	MeasureLogs := make(map[string][]sensors.Measure)
 
-	actsensor.ActSensorPool(ActContext, MeasureChan, 200, wg)
-	humsensor.HuSensorPool(HuContext, MeasureChan, 200, wg)
-	presensor.PreSensorPool(PreContext, MeasureChan, 200, wg)
+	actsensor.ActSensorPool(ActContext, MeasureChan, 2, wg)
+	humsensor.HuSensorPool(HuContext, MeasureChan, 2, wg)
+	presensor.PreSensorPool(PreContext, MeasureChan, 2, wg)
 
 	go func() {
 		wg.Wait()
@@ -55,13 +55,48 @@ func main() {
 
 	for v := range MeasureChan {
 
-		MeasureLogs = append(MeasureLogs, v)
+		MeasureLogs[v.SensorType] = append(MeasureLogs[v.SensorType], v)
 
 		fmt.Println("данные переданы в архив")
 
-		//time.Sleep(100 * time.Millisecond)
+		//time.Sleep(100 \* time.Millisecond)
 
 	}
 
-	fmt.Println(len(MeasureLogs))
+	for k, v := range MeasureLogs {
+		fmt.Println()
+		switch k {
+		case "pressure":
+			{
+				fmt.Println("собранные данные в датчиках давления")
+				for i := range v {
+					fmt.Println()
+					fmt.Println("координаты X: ", v[i].Data.X)
+					fmt.Println("координаты Y: ", v[i].Data.Y)
+					fmt.Println("собранные данные по координатам: ", v[i].Data.Value, "мм рт. ст.")
+
+				}
+			}
+		case "humidity":
+			fmt.Println("собранные данные в датчиках влажности")
+			for i := range v {
+				fmt.Println()
+				fmt.Println("координаты X: ", v[i].Data.X)
+				fmt.Println("координаты Y: ", v[i].Data.Y)
+				fmt.Println("собранные данные по координатам: ", v[i].Data.Value, "%")
+
+			}
+		case "activity":
+			fmt.Println("собранные данные в датчиках активности")
+			for i := range v {
+				fmt.Println()
+				fmt.Println("координаты X: ", v[i].Data.X)
+				fmt.Println("координаты Y: ", v[i].Data.Y)
+				fmt.Println("собранные данные по координатам: ", v[i].Data.Value, "пунктов")
+
+			}
+		}
+		fmt.Println()
+	}
+
 }
