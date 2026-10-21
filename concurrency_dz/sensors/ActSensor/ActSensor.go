@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"station/sensors"
 	"sync"
+	"time"
 )
 
-func PreSensor(ctx context.Context, n int, ActCh chan<- sensors.Measure) {
+func ActSensor(ctx context.Context, n int, ActCh chan<- sensors.Measure) {
 
 	fmt.Println("сенсор активности номер ", n, " начал работу")
 	for {
+		time.Sleep(1 * time.Second)
 		select {
 		case <-ctx.Done():
 			fmt.Println("сенсор активности номер ", n, " завершил работу")
@@ -26,7 +28,7 @@ func ActSensorPool(ctx context.Context, ActCh chan sensors.Measure, n int, wg *s
 
 	for i := 1; i <= n; i++ {
 		wg.Go(func() {
-			PreSensor(ctx, i, ActCh)
+			ActSensor(ctx, i, ActCh)
 		})
 	}
 }

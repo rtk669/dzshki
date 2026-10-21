@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"station/sensors"
 	"sync"
+	"time"
 )
 
-func PreSensor(ctx context.Context, n int, HuCh chan<- sensors.Measure) {
+func HuSensor(ctx context.Context, n int, HuCh chan<- sensors.Measure) {
 
 	fmt.Println("сенсор влажности номер ", n, " начал работу")
 	for {
+		time.Sleep(1 * time.Second)
 		select {
 		case <-ctx.Done():
 			fmt.Println("сенсор влажности номер ", n, " завершил работу")
@@ -26,7 +28,7 @@ func HuSensorPool(ctx context.Context, HuCh chan sensors.Measure, n int, wg *syn
 
 	for i := 1; i <= n; i++ {
 		wg.Go(func() {
-			PreSensor(ctx, i, HuCh)
+			HuSensor(ctx, i, HuCh)
 		})
 	}
 }

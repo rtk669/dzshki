@@ -28,40 +28,40 @@ import (
 
 func main() {
 
-	PreContext, PreCancel := context.WithCancel(context.Background())
-	HuContext, HuCancel := context.WithCancel(context.Background())
-	ActContext, ActCancel := context.WithCancel(context.Background())
+	PreContext, PreCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	HuContext, HuCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ActContext, ActCancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	defer func() {
+		PreCancel()
+		HuCancel()
+		ActCancel()
+	}()
 
 	MeasureChan := make(chan sensors.Measure)
 
 	wg := &sync.WaitGroup{}
 
-	MeasureMap := make(map[string]sensors.Data)
+	MeasureLogs := []sensors.Measure{}
 
-	mtx := sync.Mutex{}
-
-	actsensor.ActSensorPool(ActContext, MeasureChan, 2, wg)
-	humsensor.HuSensorPool(HuContext, MeasureChan, 2, wg)
-	presensor.PreSensorPool(PreContext, MeasureChan, 2, wg)
+	actsensor.ActSensorPool(ActContext, MeasureChan, 200, wg)
+	humsensor.HuSensorPool(HuContext, MeasureChan, 200, wg)
+	presensor.PreSensorPool(PreContext, MeasureChan, 200, wg)
 
 	go func() {
 		wg.Wait()
 		close(MeasureChan)
 	}()
 
-	go func() {
-		time.Sleep(8 * time.Second)
-		PreCancel()
-		HuCancel()
-		ActCancel()
-	}()
-
 	for v := range MeasureChan {
-		mtx.Lock()
-		MeasureMap[v.SensorType] = v.Data
-		mtx.Unlock()
+
+		MeasureLogs = append(MeasureLogs, v)
+
 		fmt.Println("данные переданы в архив")
 
-		time.Sleep(1 * time.Second)
+		//time.Sleep(100 * time.Millisecond)
+
 	}
+
+	fmt.Println(len(MeasureLogs))
 }
