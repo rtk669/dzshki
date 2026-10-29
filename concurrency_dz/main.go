@@ -44,8 +44,8 @@ func main() {
 
 	MeasureLogs := make(map[string][]sensors.Measure)
 
-	actsensor.ActSensorPool(ActContext, MeasureChan, 2, wg)
-	humsensor.HuSensorPool(HuContext, MeasureChan, 2, wg)
+	actsensor.ActSensorPool(ActContext, MeasureChan, 200, wg)
+	humsensor.HuSensorPool(HuContext, MeasureChan, 200, wg)
 	presensor.PreSensorPool(PreContext, MeasureChan, 2, wg)
 
 	go func() {
