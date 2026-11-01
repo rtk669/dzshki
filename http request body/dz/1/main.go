@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 )
 
 var readSlice []string
+var mtx sync.Mutex
 
 func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	httpRequestBody, err := io.ReadAll(r.Body)
@@ -20,8 +22,9 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	httpRequestBodyString := string(httpRequestBody)
 	fmt.Println(httpRequestBodyString)
 
+	mtx.Lock()
 	readSlice = append(readSlice, httpRequestBodyString)
-
+	mtx.Unlock()
 	fmt.Println(readSlice)
 
 }

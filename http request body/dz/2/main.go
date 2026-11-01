@@ -8,9 +8,11 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 var readMap map[int]string = make(map[int]string)
+var mtx sync.Mutex
 
 func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	httpRequestBody, err := io.ReadAll(r.Body)
@@ -23,15 +25,18 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := rand.Intn(1000)
 
+	mtx.Lock()
 	readMap[id] = httpRequestBodyString
 
 	for k, v := range readMap {
 		w.Write([]byte("  ваши значения:" + fmt.Sprint(k) + " " + v))
 	}
+	mtx.Unlock()
 
 }
 
 func DeleteHandler(w http.ResponseWriter, r *http.Request) {
+	defer mtx.Unlock()
 	httpRequestBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -46,6 +51,7 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	mtx.Lock()
 	if _, ok := readMap[id]; !ok {
 		w.Write([]byte("нет такого ключа"))
 		return
