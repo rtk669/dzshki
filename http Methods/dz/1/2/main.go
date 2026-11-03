@@ -15,6 +15,7 @@ var readMap map[int]string = make(map[int]string)
 var mtx sync.Mutex
 
 func ReadHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -31,6 +32,7 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	id := rand.Intn(1000)
 
 	mtx.Lock()
+	defer mtx.Unlock()
 	if _, ok := readMap[id]; !ok {
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("успешное создание"))
@@ -44,7 +46,6 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	for k, v := range readMap {
 		fmt.Println(("ваши значения:" + fmt.Sprint(k) + " " + v))
 	}
-	mtx.Unlock()
 
 }
 
@@ -69,6 +70,7 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mtx.Lock()
+	defer mtx.Unlock()
 	if _, ok := readMap[id]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("нет такого ключа"))
@@ -79,7 +81,6 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("успешное удаление по ключу"))
 
 	}
-	mtx.Unlock()
 
 }
 
